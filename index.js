@@ -1,10 +1,21 @@
+let assert = require('assert').strict;
 
+let handlerCompany = function(type, ...args) {
+    if (typeof this.handlers['on' + type] === 'function') {
+        this.handlers['on' + type](...args)
+    }
+}
 
 class WXMLParser {
-    constructor(inputs) {
-        this.inputs = inputs;
-        this.len = inputs.length || 0;
+    constructor(handlers) {
+        this.handlers = handlers || {}
+    }
+
+    write(source) {
+        this.inputs = source;
+        this.len = source.length || 0;
         this.pos = 0;
+        this.parseNodes();
     }
 
     getNextChar() {
@@ -26,71 +37,103 @@ class WXMLParser {
     }
 
     consumeWhile(matchFunc) {
-        let result = [];
+        let result = '';
         while (!this.isEOF() && matchFunc(this.getNextChar())) {
-            result.push(this.consumeChar());
+            result += this.consumeChar();
         }
-        return result.join('');
+        return result;
     }
 
     consumeWhitespace() {
-        return this.consumeWhile((char) => !/\s/.test(char));
+        return this.consumeWhile((char) => /\s/.test(char));
     }
 
     // parse
-    parse() {
-        while(!this.isEOF()) {
+    parseNodes() {
+        while(!this.isEOF() && !this.startWiths('</')) {
             this.parseNode()
         }
     }
 
     parseNode() {
         let nextChar = this.getNextChar();
-        if (nextChar == '<') {
-            this.consumeChar()
-            if (this.startWiths('!--')) {
-                let comment = this.parseComment();
-                console.log('comment:', comment);
-                return;
-            }
-            if (this.getNextChar() === '/') {
-                // close tag
-                this.consumeChar();
-                let closeTag = this.parseTagName();
-                console.log('close tag', closeTag);
-                this.consumeChar();
-                return;
-            }
-            // open tag
-            this.parseElement();
-            return
+        switch (nextChar) {
+            case '{':
+                this.parseTemplate();
+                break;
+            case '<':
+                if (this.startWiths('<!--')) {
+                    let comment = this.parseComment();
+                    console.log('comment:', comment);
+                    return;
+                }
+                // open tag
+                this.parseElement();
+                break;
+            default:
+                this.parseText();
         }
-        this.parseText();
+    }
+
+    parseTemplate() {
+        assert.ok(this.consumeChar() == '{')
+        assert.ok(this.consumeChar() == '{')
+        let template = this.consumeWhile((char) => char !== '}')
+        handlerCompany.call(this,'template', template)
+        assert.ok(this.consumeChar() == '}')
+        assert.ok(this.consumeChar() == '}')
     }
 
     parseText() {
-        let text = this.consumeWhile((char) => char !== '<')
-        console.log('text', text);
+        let text = this.consumeWhile((char) => /[^<{]/.test(char))
+        // console.log('text', encodeURIComponent(text));
+        handlerCompany.call(this,'text', text)
         return text;
     }
 
     parseComment() {
-        let comment = this.consumeWhile((char) => char !== '>')
-        return comment.slice(3, -2)
+        assert.ok(this.consumeChar() == '<')
+        assert.ok(this.consumeChar() == '!')
+        assert.ok(this.consumeChar() == '-')
+        assert.ok(this.consumeChar() == '-')
+        let comment = this.consumeWhile((char) => char !== '-')
+        handlerCompany.call(this,'comment', comment)
+        assert.ok(this.consumeChar() == '-')
+        assert.ok(this.consumeChar() == '-')
+        assert.ok(this.consumeChar() == '>')
+        return comment
     }
 
     parseElement() {
         // open tag
+        assert.ok(this.consumeChar() === '<')
         let tagName = this.parseTagName();
         let attrs = this.parseAttrs();
-        console.log('open', tagName);
-        console.log('attrs', attrs || 'empty');
+        let isSelfClosing = false;
+        // console.log('open', tagName);
+        // console.log('attrs', attrs || 'empty');
         
-        this.consumeWhile((char) => /\s/.test(char))
+        this.consumeWhitespace();
         if (this.getNextChar() === '/') {
             // selfClosing
+            isSelfClosing = true;
         }
+        handlerCompany.call(this,'opentag', tagName, attrs)
         this.consumeWhile((char) => char !== '>')
+        assert.ok(this.consumeChar() == '>')
+        if (isSelfClosing) {
+            handlerCompany.call(this,'closetag', tagName, true)
+            return;
+        }
+
+        this.parseNodes();
+        
+        assert.ok(this.consumeChar() == '<')
+        assert.ok(this.consumeChar() == '/')
+        // console.log('close', this.parseTagName())
+        let closeTagName = this.parseTagName()
+        handlerCompany.call(this,'closetag', closeTagName, false)
+        assert.ok(this.consumeChar() == '>')
     }
 
     parseTagName() {
@@ -98,26 +141,20 @@ class WXMLParser {
     }
 
     parseAttrs() {
-        let attrs = this.consumeWhile((char) => /[^/>]/.test(char));
-        attrs = attrs.trim();
-        if (attrs) {
-            return attrs.split(' ').map(item => {
-                let [key, val] = item.split('=');
-                return {key, val}
-            })
+        this.consumeWhitespace()
+        let attrs = []
+        while(/[^/>]/.test(this.getNextChar())) {
+            let key = this.consumeWhile(char => char !== '=');
+            assert.ok(this.consumeChar() == '=')
+            this.consumeWhitespace();
+            assert.ok(this.consumeChar() == '"')
+            let val = this.consumeWhile(char => char !== '"')
+            assert.ok(this.consumeChar() == '"')
+            attrs.push({key, val})
+            this.consumeWhitespace()
         }
+        return attrs
     }
 }
 
-function parse(inputs, options) {
-    let parser = new WXMLParser(inputs);
-    parser.parse()
-};
-
-// module.exports = parse
-
-parse(`
-<view a="1"></view>
-<!-- test -->
-<import src="abc"/>
-<view>zxc</view>`)
+module.exports = WXMLParser
