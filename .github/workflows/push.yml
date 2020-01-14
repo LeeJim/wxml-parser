@@ -1,33 +1,25 @@
-on: push
-name: Build and Publish
+name: npm-publish
+on:
+  push:
+    branches:
+      - master
 jobs:
-  shellLint:
-    name: Shell Lint
+  npm-publish:
+    name: npm-publish
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Shell Lint
-      uses: actions/bin/shellcheck@master
+    - name: Checkout repository
+      uses: actions/checkout@master
+    - name: Set up Node.js
+      uses: actions/setup-node@master
       with:
-        args: entrypoint.sh
-    - name: Build Docker
-      uses: actions/docker/cli@master
+        node-version: 10.0.0
+    - name: Publish if version has been updated
+      uses: pascalgn/npm-publish-action@51fdb4531e99aac1873764ef7271af448dc42ab4
       with:
-        args: build -t npm .
-    - name: Build
-      uses: actions/npm@master
-      with:
-        args: install
-    - name: Test
-      uses: actions/npm@master
-      with:
-        args: test
-    - name: Publish Filter
-      uses: actions/bin/filter@master
-      with:
-        args: branch master
-    - name: Publish
-      uses: mikeal/merge-release@master
+        tag_name: "v%s"
+        tag_message: "v%s"
+        commit_pattern: "^Release (\\S+)"
       env:
-        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }} 
         NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
