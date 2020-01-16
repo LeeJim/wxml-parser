@@ -1,0 +1,6 @@
+{
+    "extends": ["alloy"],
+    "rules": {
+        "no-invalid-this": 0
+    }
+}

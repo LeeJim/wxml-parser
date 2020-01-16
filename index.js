@@ -2,13 +2,13 @@ let assert = require('assert').strict;
 
 let handlerCompany = function(type, ...args) {
     if (typeof this.handlers['on' + type] === 'function') {
-        this.handlers['on' + type](...args)
+        this.handlers['on' + type](...args);
     }
-}
+};
 
 class WXMLParser {
     constructor(handlers) {
-        this.handlers = handlers || {}
+        this.handlers = handlers || {};
     }
 
     write(source) {
@@ -50,8 +50,8 @@ class WXMLParser {
 
     // parse
     parseNodes() {
-        while(!this.isEOF() && !this.startWiths('</')) {
-            this.parseNode()
+        while (!this.isEOF() && !this.startWiths('</')) {
+            this.parseNode();
         }
     }
 
@@ -76,64 +76,64 @@ class WXMLParser {
     }
 
     parseTemplate() {
-        assert.ok(this.consumeChar() == '{')
-        assert.ok(this.consumeChar() == '{')
-        let template = this.consumeWhile((char) => char !== '}')
-        handlerCompany.call(this,'template', template)
-        assert.ok(this.consumeChar() == '}')
-        assert.ok(this.consumeChar() == '}')
+        assert.ok(this.consumeChar() === '{');
+        assert.ok(this.consumeChar() === '{');
+        let template = this.consumeWhile((char) => char !== '}');
+        handlerCompany.call(this, 'template', template);
+        assert.ok(this.consumeChar() === '}');
+        assert.ok(this.consumeChar() === '}');
     }
 
     parseText() {
-        let text = this.consumeWhile((char) => /[^<{]/.test(char))
+        let text = this.consumeWhile((char) => /[^<{]/.test(char));
         // console.log('text', encodeURIComponent(text));
-        handlerCompany.call(this,'text', text)
+        handlerCompany.call(this, 'text', text);
         return text;
     }
 
     parseComment() {
-        assert.ok(this.consumeChar() == '<')
-        assert.ok(this.consumeChar() == '!')
-        assert.ok(this.consumeChar() == '-')
-        assert.ok(this.consumeChar() == '-')
-        let comment = this.consumeWhile((char) => char !== '-')
-        handlerCompany.call(this,'comment', comment)
-        assert.ok(this.consumeChar() == '-')
-        assert.ok(this.consumeChar() == '-')
-        assert.ok(this.consumeChar() == '>')
-        return comment
+        assert.ok(this.consumeChar() === '<');
+        assert.ok(this.consumeChar() === '!');
+        assert.ok(this.consumeChar() === '-');
+        assert.ok(this.consumeChar() === '-');
+        let comment = this.consumeWhile((char) => char !== '-');
+        handlerCompany.call(this, 'comment', comment);
+        assert.ok(this.consumeChar() === '-');
+        assert.ok(this.consumeChar() === '-');
+        assert.ok(this.consumeChar() === '>');
+        return comment;
     }
 
     parseElement() {
         // open tag
-        assert.ok(this.consumeChar() === '<')
+        assert.ok(this.consumeChar() === '<');
         let tagName = this.parseTagName();
         let attrs = this.parseAttrs();
         let isSelfClosing = false;
         // console.log('open', tagName);
         // console.log('attrs', attrs || 'empty');
-        
+
         this.consumeWhitespace();
         if (this.getNextChar() === '/') {
             // selfClosing
             isSelfClosing = true;
         }
-        handlerCompany.call(this,'opentag', tagName, attrs)
-        this.consumeWhile((char) => char !== '>')
-        assert.ok(this.consumeChar() == '>')
+        handlerCompany.call(this, 'opentag', tagName, attrs);
+        this.consumeWhile((char) => char !== '>');
+        assert.ok(this.consumeChar() === '>');
         if (isSelfClosing) {
-            handlerCompany.call(this,'closetag', tagName, true)
+            handlerCompany.call(this, 'closetag', tagName, true);
             return;
         }
 
         this.parseNodes();
-        
-        assert.ok(this.consumeChar() == '<')
-        assert.ok(this.consumeChar() == '/')
+
+        assert.ok(this.consumeChar() === '<');
+        assert.ok(this.consumeChar() === '/');
         // console.log('close', this.parseTagName())
-        let closeTagName = this.parseTagName()
-        handlerCompany.call(this,'closetag', closeTagName, false)
-        assert.ok(this.consumeChar() == '>')
+        let closeTagName = this.parseTagName();
+        handlerCompany.call(this, 'closetag', closeTagName, false);
+        assert.ok(this.consumeChar() === '>');
     }
 
     parseTagName() {
@@ -141,20 +141,20 @@ class WXMLParser {
     }
 
     parseAttrs() {
-        this.consumeWhitespace()
-        let attrs = []
-        while(/[^/>]/.test(this.getNextChar())) {
-            let key = this.consumeWhile(char => char !== '=');
-            assert.ok(this.consumeChar() == '=')
+        this.consumeWhitespace();
+        let attrs = [];
+        while (/[^/>]/.test(this.getNextChar())) {
+            let key = this.consumeWhile((char) => char !== '=');
+            assert.ok(this.consumeChar() === '=');
             this.consumeWhitespace();
-            assert.ok(this.consumeChar() == '"')
-            let val = this.consumeWhile(char => char !== '"')
-            assert.ok(this.consumeChar() == '"')
-            attrs.push({key, val})
-            this.consumeWhitespace()
+            assert.ok(this.consumeChar() === '"');
+            let val = this.consumeWhile((char) => char !== '"');
+            assert.ok(this.consumeChar() === '"');
+            attrs.push({ key, val });
+            this.consumeWhitespace();
         }
-        return attrs
+        return attrs;
     }
 }
 
-module.exports = WXMLParser
+module.exports = WXMLParser;
