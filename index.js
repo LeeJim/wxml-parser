@@ -66,12 +66,33 @@ class WXMLParser {
                     this.parseComment();
                     return;
                 }
+                if (this.startWiths('<wxs')) {
+                    this.parseScript();
+                    return;
+                }
                 // open tag
                 this.parseElement();
                 break;
             default:
                 this.parseText();
         }
+    }
+
+    parseScript() {
+        assert.ok(this.consumeChar() === '<');
+        assert.ok(this.consumeChar() === 'w');
+        assert.ok(this.consumeChar() === 'x');
+        assert.ok(this.consumeChar() === 's');
+        this.consumeWhile((char) => char !== '>');
+        assert.ok(this.consumeChar() === '>');
+        let wxs = this.consumeWhile(() => !this.startWiths('</wxs>'));
+        assert.ok(this.consumeChar() === '<');
+        assert.ok(this.consumeChar() === '/');
+        assert.ok(this.consumeChar() === 'w');
+        assert.ok(this.consumeChar() === 'x');
+        assert.ok(this.consumeChar() === 's');
+        assert.ok(this.consumeChar() === '>');
+        return wxs;
     }
 
     parseTemplate() {
