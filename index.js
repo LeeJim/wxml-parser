@@ -63,8 +63,7 @@ class WXMLParser {
                 break;
             case '<':
                 if (this.startWiths('<!--')) {
-                    let comment = this.parseComment();
-                    console.log('comment:', comment);
+                    this.parseComment();
                     return;
                 }
                 // open tag
@@ -86,7 +85,6 @@ class WXMLParser {
 
     parseText() {
         let text = this.consumeWhile((char) => /[^<{]/.test(char));
-        // console.log('text', encodeURIComponent(text));
         handlerCompany.call(this, 'text', text);
         return text;
     }
@@ -96,7 +94,7 @@ class WXMLParser {
         assert.ok(this.consumeChar() === '!');
         assert.ok(this.consumeChar() === '-');
         assert.ok(this.consumeChar() === '-');
-        let comment = this.consumeWhile((char) => char !== '-');
+        let comment = this.consumeWhile((char) => char !== '-' || !this.startWiths('-->'));
         handlerCompany.call(this, 'comment', comment);
         assert.ok(this.consumeChar() === '-');
         assert.ok(this.consumeChar() === '-');
@@ -110,27 +108,23 @@ class WXMLParser {
         let tagName = this.parseTagName();
         let attrs = this.parseAttrs();
         let isSelfClosing = false;
-        // console.log('open', tagName);
-        // console.log('attrs', attrs || 'empty');
 
         this.consumeWhitespace();
         if (this.getNextChar() === '/') {
             // selfClosing
             isSelfClosing = true;
         }
-        handlerCompany.call(this, 'opentag', tagName, attrs);
+        handlerCompany.call(this, 'opentag', tagName, attrs, isSelfClosing);
         this.consumeWhile((char) => char !== '>');
         assert.ok(this.consumeChar() === '>');
         if (isSelfClosing) {
-            handlerCompany.call(this, 'closetag', tagName, true);
+            // handlerCompany.call(this, 'closetag', tagName, true);
             return;
         }
 
         this.parseNodes();
-
         assert.ok(this.consumeChar() === '<');
         assert.ok(this.consumeChar() === '/');
-        // console.log('close', this.parseTagName())
         let closeTagName = this.parseTagName();
         handlerCompany.call(this, 'closetag', closeTagName, false);
         assert.ok(this.consumeChar() === '>');
@@ -142,15 +136,21 @@ class WXMLParser {
 
     parseAttrs() {
         this.consumeWhitespace();
-        let attrs = [];
+        let attrs = {};
         while (/[^/>]/.test(this.getNextChar())) {
-            let key = this.consumeWhile((char) => char !== '=');
+            let key = this.consumeWhile((char) => /[^=/>\s]/.test(char));
+            this.consumeWhitespace();
+            if (this.getNextChar() !== '=') {
+                attrs[key] = '';
+                continue;
+            }
             assert.ok(this.consumeChar() === '=');
             this.consumeWhitespace();
-            assert.ok(this.consumeChar() === '"');
-            let val = this.consumeWhile((char) => char !== '"');
-            assert.ok(this.consumeChar() === '"');
-            attrs.push({ key, val });
+            let quoteMark = this.consumeChar(); // single or double quote marks
+            assert.ok(/['"]/.test(quoteMark));
+            let val = this.consumeWhile((char) => char !== quoteMark);
+            assert.ok(this.consumeChar() === quoteMark);
+            attrs[key] = val;
             this.consumeWhitespace();
         }
         return attrs;
