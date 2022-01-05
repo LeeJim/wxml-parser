@@ -1,13 +1,20 @@
 let Parser = require('../index');
-let rawWXML = `
-<view a="1"></view>
-<!-- test -->
-<view>{{ a > 2 ? 'as' : '12' }}</view>
-<import src="abc"></import>
-<wxs src="./index.wxs" />
-<view>zxc{{ middle }}asdasd</view>`
 
-test('解析和还原WXML', () => {
+let rawWXML = `
+<wxs src="./index.wxs" />
+<wxs module="lodash">
+var foo = "'hello world' from tools.wxs";
+var bar = function (d) {
+  return d;
+}
+module.exports = {
+  FOO: foo,
+  bar: bar,
+};
+module.exports.msg = "some msg"; 
+</wxs>`
+
+test('parse wxs', () => {
     let newWXML = ''
     let parser = new Parser({
         onopentag(tagname, attrs, isSelfClosing) {
@@ -23,15 +30,9 @@ test('解析和还原WXML', () => {
             console.log('text', text);
             newWXML += text;
         },
-        oncomment(cmt) {
-            newWXML += `<!--${cmt}-->`
-        },
-        ontemplate(tmp) {
-            console.log('template', tmp);
-            newWXML += `{{${tmp}}}`
-        },
         onwxs(wxs) {
             console.log('wxs', wxs);
+            newWXML += wxs;
         }
     });
     console.log(newWXML);

@@ -66,33 +66,12 @@ class WXMLParser {
                     this.parseComment();
                     return;
                 }
-                if (this.startWiths('<wxs')) {
-                    this.parseScript();
-                    return;
-                }
                 // open tag
                 this.parseElement();
                 break;
             default:
                 this.parseText();
         }
-    }
-
-    parseScript() {
-        assert.ok(this.consumeChar() === '<');
-        assert.ok(this.consumeChar() === 'w');
-        assert.ok(this.consumeChar() === 'x');
-        assert.ok(this.consumeChar() === 's');
-        this.consumeWhile((char) => char !== '>');
-        assert.ok(this.consumeChar() === '>');
-        let wxs = this.consumeWhile(() => !this.startWiths('</wxs>'));
-        assert.ok(this.consumeChar() === '<');
-        assert.ok(this.consumeChar() === '/');
-        assert.ok(this.consumeChar() === 'w');
-        assert.ok(this.consumeChar() === 'x');
-        assert.ok(this.consumeChar() === 's');
-        assert.ok(this.consumeChar() === '>');
-        return wxs;
     }
 
     parseTemplate() {
@@ -143,7 +122,13 @@ class WXMLParser {
             return;
         }
 
-        this.parseNodes();
+        if (tagName === 'wxs') {
+            const wxs = this.consumeWhile(char => char !== '<');
+            handlerCompany.call(this, 'wxs', wxs);
+        } else {
+            this.parseNodes();
+        }
+
         assert.ok(this.consumeChar() === '<');
         assert.ok(this.consumeChar() === '/');
         let closeTagName = this.parseTagName();
