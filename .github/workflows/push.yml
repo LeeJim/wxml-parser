@@ -1,8 +1,7 @@
 name: npm-publish
-on:
-    push:
-        branches:
-            - main
+
+on: create
+
 jobs:
     npm-publish:
         name: npm-publish
