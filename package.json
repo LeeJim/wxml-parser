@@ -1,6 +1,6 @@
 {
     "name": "@leejim/wxml-parser",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "微信小程序WXML Parser",
     "main": "index.js",
     "scripts": {
