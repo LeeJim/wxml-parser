@@ -7,7 +7,7 @@ let rawWXML = `
 <wxs src="./index.wxs" />
 <view>zxc{{ middle }}asdasd</view>`
 
-test('解析和还原WXML', () => {
+test('base', () => {
     let newWXML = ''
     let parser = new Parser({
         onopentag(tagname, attrs, isSelfClosing) {

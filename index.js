@@ -42,9 +42,8 @@ class WXMLParser {
 
     consumeWhile(matchFunc, len) {
         let result = '';
-        const content = len ? this.getNextString(len) : this.getNextChar();
 
-        while (!this.isEOF() && matchFunc(content)) {
+        while (!this.isEOF() && matchFunc(len ? this.getNextString(len) : this.getNextChar())) {
             result += this.consumeChar();
         }
         return result;
@@ -129,7 +128,7 @@ class WXMLParser {
         }
 
         if (tagName === 'wxs') {
-            const wxs = this.consumeWhile(char => char !== '<');
+            const wxs = this.consumeWhile(str => str !== '</wxs', 5);
             handlerCompany.call(this, 'wxs', wxs);
         } else {
             this.parseNodes();
