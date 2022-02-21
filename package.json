@@ -10,9 +10,9 @@
         "type": "git",
         "url": "git+https://github.com/LeeJim/wxml-parser.git"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "keywords": ["wxml", "parse", "wechat", "leejim"],
+    "author": "leejim",
+    "license": "MIT",
     "bugs": {
         "url": "https://github.com/LeeJim/wxml-parser/issues"
     },
