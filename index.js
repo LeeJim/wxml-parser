@@ -22,6 +22,10 @@ class WXMLParser {
         return this.inputs[this.pos];
     }
 
+    getNextString(len) {
+        return this.inputs.substr(this.pos, len)
+    }
+
     startWiths(str) {
         return this.inputs.substr(this.pos, str.length) === str;
     }
@@ -36,9 +40,11 @@ class WXMLParser {
         return this.inputs[this.pos++];
     }
 
-    consumeWhile(matchFunc) {
+    consumeWhile(matchFunc, len) {
         let result = '';
-        while (!this.isEOF() && matchFunc(this.getNextChar())) {
+        const content = len ? this.getNextString(len) : this.getNextChar();
+
+        while (!this.isEOF() && matchFunc(content)) {
             result += this.consumeChar();
         }
         return result;
