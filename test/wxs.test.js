@@ -16,20 +16,15 @@ module.exports.msg = "some msg";
 let newWXML = ''
 const parseHanlder = {
     onopentag(tagname, attrs, isSelfClosing) {
-        console.log('open tag', tagname);
-        console.log('attrs', attrs);
         newWXML += `<${tagname}${Object.entries(attrs).map(([key, value]) => ` ${key}="${value}"`)}${isSelfClosing ? ' /' : ''}>`
     },
     onclosetag(tagname) {
-        console.log('close tag', tagname);
         newWXML += `</${tagname}>`
     },
     ontext(text) {
-        console.log('text', text);
         newWXML += text;
     },
     onwxs(wxs) {
-        console.log('wxs', wxs);
         newWXML += wxs;
     }
 };

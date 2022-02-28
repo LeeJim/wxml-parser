@@ -40,6 +40,14 @@ class WXMLParser {
         return this.inputs[this.pos++];
     }
 
+    consumeCharIgnoreWhitespace() {
+        const text = this.consumeWhitespace()
+        // if (text) {
+        //     handlerCompany.call(this, 'text', text);
+        // }
+        return this.inputs[this.pos++];
+    }
+
     consumeWhile(matchFunc, len) {
         let result = '';
 
@@ -134,11 +142,11 @@ class WXMLParser {
             this.parseNodes();
         }
 
-        assert.ok(this.consumeChar() === '<');
-        assert.ok(this.consumeChar() === '/');
+        assert.ok(this.consumeCharIgnoreWhitespace() === '<');
+        assert.ok(this.consumeCharIgnoreWhitespace() === '/');
         let closeTagName = this.parseTagName();
         handlerCompany.call(this, 'closetag', closeTagName, false);
-        assert.ok(this.consumeChar() === '>');
+        assert.ok(this.consumeCharIgnoreWhitespace() === '>');
     }
 
     parseTagName() {
