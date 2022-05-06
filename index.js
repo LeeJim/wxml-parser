@@ -90,7 +90,7 @@ class WXMLParser {
     parseTemplate() {
         assert.ok(this.consumeChar() === '{');
         assert.ok(this.consumeChar() === '{');
-        let template = this.consumeWhile((char) => char !== '}');
+        let template = this.consumeWhile((chars) => chars !== '}}', 2);
         handlerCompany.call(this, 'template', template);
         assert.ok(this.consumeChar() === '}');
         assert.ok(this.consumeChar() === '}');

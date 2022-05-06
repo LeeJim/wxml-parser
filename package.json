@@ -10,7 +10,12 @@
         "type": "git",
         "url": "git+https://github.com/LeeJim/wxml-parser.git"
     },
-    "keywords": ["wxml", "parse", "wechat", "leejim"],
+    "keywords": [
+        "wxml",
+        "parse",
+        "wechat",
+        "leejim"
+    ],
     "author": "leejim",
     "license": "MIT",
     "bugs": {
@@ -21,6 +26,7 @@
         "babel-eslint": "^10.1.0",
         "eslint": "^8.6.0",
         "eslint-config-alloy": "^3.5.0",
+        "glob": "^8.0.1",
         "husky": "^7.0.4",
         "jest": "^27.4.6",
         "prettier": "^2.5.1",
