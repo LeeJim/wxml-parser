@@ -49,3 +49,10 @@ test('tag name with whitespace', () => {
     let final = parse(origin)
     expect(final).toBe(origin.replace(/\s/g, ''))
 })
+
+test('tag name with number', () => {
+    let origin = `<dialog-v2>aaa</dialog-v2>`
+    let final = parse(origin)
+    console.log(final);
+    expect(final).toBe(origin)
+})

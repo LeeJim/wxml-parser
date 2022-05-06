@@ -150,7 +150,7 @@ class WXMLParser {
     }
 
     parseTagName() {
-        return this.consumeWhile((char) => /[a-zA-Z-]/.test(char));
+        return this.consumeWhile((char) => /[\w-]/.test(char));
     }
 
     parseAttrs() {
