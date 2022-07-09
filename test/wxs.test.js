@@ -16,7 +16,7 @@ module.exports.msg = "some msg";
 let newWXML = ''
 const parseHanlder = {
     onopentag(tagname, attrs, isSelfClosing) {
-        newWXML += `<${tagname}${Object.entries(attrs).map(([key, value]) => ` ${key}="${value}"`)}${isSelfClosing ? ' /' : ''}>`
+        newWXML += `<${tagname}${attrs.map((item) => typeof item == 'string' ? ` ${item}`: ` ${item.key}="${item.value}"`)}${isSelfClosing ? ' /' : ''}>`
     },
     onclosetag(tagname) {
         newWXML += `</${tagname}>`

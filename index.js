@@ -155,21 +155,21 @@ class WXMLParser {
 
     parseAttrs() {
         this.consumeWhitespace();
-        let attrs = {};
+        let attrs = [];
         while (/[^/>]/.test(this.getNextChar())) {
             let key = this.consumeWhile((char) => /[^=/>\s]/.test(char));
             this.consumeWhitespace();
             if (this.getNextChar() !== '=') {
-                attrs[key] = '';
+                attrs.push(key);
                 continue;
             }
             assert.ok(this.consumeChar() === '=');
             this.consumeWhitespace();
             let quoteMark = this.consumeChar(); // single or double quote marks
             assert.ok(/['"]/.test(quoteMark));
-            let val = this.consumeWhile((char) => char !== quoteMark);
+            let value = this.consumeWhile((char) => char !== quoteMark);
             assert.ok(this.consumeChar() === quoteMark);
-            attrs[key] = val;
+            attrs.push({ key, value })
             this.consumeWhitespace();
         }
         return attrs;

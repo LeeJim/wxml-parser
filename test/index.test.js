@@ -4,8 +4,8 @@ const parse = (str) => {
     let parser = new Parser({
         onopentag(tagname, attrs, isSelfClosing) {
             // console.log('open tag', tagname);
-            // console.log('attrs', attrs);
-            ans += `<${tagname}${Object.entries(attrs).map(([key, value]) => ` ${key}="${value}"`)}${isSelfClosing ? ' /' : ''}>`
+            console.log('attrs', attrs);
+            ans += `<${tagname}${attrs.map((item) => typeof item == 'string' ? ` ${item}` : ` ${item.key}="${item.value}"`).join('')}${isSelfClosing ? ' /' : ''}>`
         },
         onclosetag(tagname) {
             // console.log('close tag', tagname);
@@ -53,6 +53,11 @@ test('tag name with whitespace', () => {
 test('tag name with number', () => {
     let origin = `<dialog-v2>aaa</dialog-v2>`
     let final = parse(origin)
-    console.log(final);
+    expect(final).toBe(origin)
+})
+
+test('attr with empty string', () => {
+    let origin = '<test disabled name=""></test>';
+    let final = parse(origin)
     expect(final).toBe(origin)
 })
